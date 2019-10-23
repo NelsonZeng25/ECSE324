@@ -1,0 +1,68 @@
+
+P:/ECSE324/G80_Lab2/factorial.axf:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+00000000 <__cs3_interrupt_vector>:
+			.text
+			.global _start
+
+_start:
+			LDR R1, =NUMBER			// R1 holds the address to number
+   0:	e59f1048 	ldr	r1, [pc, #72]	; 50 <RESULT+0x4>
+			LDR R0, [R1]			// R0 holds N
+   4:	e5910000 	ldr	r0, [r1]
+			BL FACTORIAL			// Calls factorial()
+   8:	eb000002 	bl	18 <FACTORIAL>
+			LDR R2, =RESULT
+   c:	e59f2040 	ldr	r2, [pc, #64]	; 54 <RESULT+0x8>
+			STR R0, [R2]			// Store R0 into results
+  10:	e5820000 	str	r0, [r2]
+			B END
+  14:	ea00000a 	b	44 <END>
+
+00000018 <FACTORIAL>:
+
+FACTORIAL:	PUSH {R1, LR}			// Remembers the state of R1 and LR
+  18:	e92d4002 	push	{r1, lr}
+			MOV R1, R0				// Store intial R0 value into R1
+  1c:	e1a01000 	mov	r1, r0
+			CMP R0, #0				// Checks when R0 is 0
+  20:	e3500000 	cmp	r0, #0
+			BNE NOT_ZERO			// Branch out to compute (n-1)
+  24:	1a000001 	bne	30 <NOT_ZERO>
+			MOV R0, #1
+  28:	e3a00001 	mov	r0, #1
+			B FINAL
+  2c:	ea000002 	b	3c <FINAL>
+
+00000030 <NOT_ZERO>:
+
+NOT_ZERO:	SUB R0, R0, #1			// R0 = n-1
+  30:	e2400001 	sub	r0, r0, #1
+			BL FACTORIAL			// Recursively call Factorial()
+  34:	ebfffff7 	bl	18 <FACTORIAL>
+									// R0 now contains factorial(n-1)
+			MUL R0, R0, R1			// R0 stores factorial(n-1) * n
+  38:	e0000190 	mul	r0, r0, r1
+
+0000003c <FINAL>:
+
+FINAL:		POP {R1, LR}			// Restore previous version of R1 and LR
+  3c:	e8bd4002 	pop	{r1, lr}
+			BX LR					// Exit factorial call
+  40:	e12fff1e 	bx	lr
+
+00000044 <END>:
+
+END:		B END
+  44:	eafffffe 	b	44 <END>
+
+00000048 <NUMBER>:
+  48:	00000003 	.word	0x00000003
+
+0000004c <RESULT>:
+  4c:	00000000 	.word	0x00000000
+  50:	00000048 	.word	0x00000048
+  54:	0000004c 	.word	0x0000004c

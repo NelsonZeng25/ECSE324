@@ -1,0 +1,69 @@
+
+P:/ECSE324/G80_Lab2/part1.3.axf:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+00000000 <__cs3_interrupt_vector>:
+			.text
+			.global _start
+
+_start:
+			LDR R1, =NUMBER
+   0:	e59f104c 	ldr	r1, [pc, #76]	; 54 <RESULT+0x4>
+			LDR R0, [R1]
+   4:	e5910000 	ldr	r0, [r1]
+			BL FACTORIAL
+   8:	eb000002 	bl	18 <FACTORIAL>
+			LDR R2, =RESULT
+   c:	e59f2044 	ldr	r2, [pc, #68]	; 58 <RESULT+0x8>
+			STR R0, [R2]
+  10:	e5820000 	str	r0, [r2]
+			B END
+  14:	ea00000b 	b	48 <END>
+
+00000018 <FACTORIAL>:
+
+FACTORIAL:	PUSH {R1, LR}
+  18:	e92d4002 	push	{r1, lr}
+			MOV R1, R0
+  1c:	e1a01000 	mov	r1, r0
+			CMP R0, #0
+  20:	e3500000 	cmp	r0, #0
+			BNE NOT_ZERO
+  24:	1a000001 	bne	30 <NOT_ZERO>
+			MOV R0, #1
+  28:	e3a00001 	mov	r0, #1
+			B FINAL
+  2c:	ea000003 	b	40 <FINAL>
+
+00000030 <NOT_ZERO>:
+
+NOT_ZERO:	SUB R0, R0, #1
+  30:	e2400001 	sub	r0, r0, #1
+			BL FACTORIAL
+  34:	ebfffff7 	bl	18 <FACTORIAL>
+			MOV R2, R1
+  38:	e1a02001 	mov	r2, r1
+			MUL R0, R0, R2
+  3c:	e0000290 	mul	r0, r0, r2
+
+00000040 <FINAL>:
+
+FINAL:		POP {R1, LR}
+  40:	e8bd4002 	pop	{r1, lr}
+			BX LR
+  44:	e12fff1e 	bx	lr
+
+00000048 <END>:
+
+END:		B END
+  48:	eafffffe 	b	48 <END>
+
+0000004c <NUMBER>:
+  4c:	00000006 	.word	0x00000006
+
+00000050 <RESULT>:
+  50:	00000000 	.word	0x00000000
+  54:	0000004c 	.word	0x0000004c
+  58:	00000050 	.word	0x00000050
