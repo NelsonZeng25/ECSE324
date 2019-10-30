@@ -7,15 +7,15 @@
 	.global HEX_flood_ASM
 	.global HEX_write_ASM
 
-// turns off all the LED segments of the HEX displays
-HEX_clear_ASM:
+display:	
+			// 44-20-64
 			LDR R2, =HEX_4_5
 			MOV R3, #0x00000066
 			LSL R3, #8
 			ORR R3, #0x66
 			STR R3, [R2]
 
-			LDR R1, =HEX_0_3
+			LDR R8, =HEX_0_3
 			MOV R5, #0x0000005B		//give it an initial value
 			LSL R5, #8
 			ORR R5, #0X3F
@@ -23,9 +23,15 @@ HEX_clear_ASM:
 			ORR R5, #0X7D
 			LSL R5, #8
 			ORR R5, #0X66
-			STR R5, [R1]
+			STR R5, [R8]
 
-			PUSH {R1-R8,LR}			
+			BX LR
+// turns off all the LED segments of the HEX displays
+HEX_clear_ASM:
+			//BL display
+	
+			PUSH {R1-R8,LR}
+			LDR R1, =HEX_0_3			
 			MOV R3, #0			// Index of which hex we're at
 			
 Clear_Loop:	CMP R3, #6
@@ -54,23 +60,10 @@ Clear_DONE:	POP {R1-R8, LR}
 			BX LR
 
 HEX_flood_ASM:
-			LDR R2, =HEX_4_5
-			MOV R3, #0x00000066
-			LSL R3, #8
-			ORR R3, #0x66
-			STR R3, [R2]
+			BL display			
 
-			LDR R1, =HEX_0_3
-			MOV R5, #0x0000005B		//give it an initial value
-			LSL R5, #8
-			ORR R5, #0X3F
-			LSL R5, #8
-			ORR R5, #0X7D
-			LSL R5, #8
-			ORR R5, #0X66
-			STR R5, [R1]
-
-			PUSH {R1-R8,LR}			
+			PUSH {R1-R8,LR}		
+			LDR R1, =HEX_0_3	
 			MOV R3, #0			// Index of which hex we're at
 			
 Flood_Loop:	CMP R3, #6
@@ -98,6 +91,49 @@ Flood:		CMP R3, #3			// Check if we're at the HEX 4 or 5
 Flood_DONE:	POP {R1-R8, LR}
 			BX LR
 
+
+HEX_write_ASM:	
+				BL display	
+		
+				MOV R10, R0			//we know that R0 holds a hot-one encoding of which HEX display, R1 holds the character value
+				MOV R9, R1 
+				BL HEX_clear_ASM		//we have to clear the display we have before doing anything on it
+				MOV R0, R10
+		
+				PUSH {R1-R8,LR}
+				LDR R1, =HEX_0_3		//put location of the HEX3-0 register into R0
+				MOV R3, #0				//this is our counter for which hex counts
+				MOV R4, #10				// Offset used to get proper hex value
+				LDR R5, =LIGHTS
+
+				ADD R5, R5, R9, LSL #2
+				B Write_Loop
+
+Write_Loop:	CMP R3, #6
+			BEQ Write_DONE
+			AND R4, R0, #1
+			CMP R4, #1
+			BLEQ Write
+
+			LSR R0, R0, #1 		// Shift the input right by 1 bit since the input is hot encoded
+								// So we move on to the next bit to check if that value (HEX) is 1
+			ADD R3, R3, #1		// Increment counter
+			B Write_Loop
+
+Write:		CMP R3, #3			// Check if we're at the HEX 4 or 5
+			SUBGT R3, R3, #4	// Sets the counter to 0 or 1 when it's > 3 (the counter refers to HEX 4-5 when it's 0-1 after this is called)
+			LDRGT R1, =HEX_4_5	// Set it to the the other disp HEX
+			LDR R2, [R1]
+			LDR R7, [R5]
+			LSL R6, R3, #3
+			LSL R7, R7, R6
+			ORR R2, R2, R7
+			STR R2, [R1]
+			BX LR
+
+Write_DONE: POP {R1-R8, LR}
+			BX LR
+
 CLEAR_N:	.word 0xFFFFFF00
 			.word 0xFFFF00FF
 			.word 0xFF00FFFF
@@ -121,7 +157,6 @@ LIGHTS:		.word 0x0000003F //(00111111)b = 0 on the HEX LEDs
 			.word 0x00000007 //(00000111)b = 7 on the HEX LEDs	
 			.word 0x0000007F //(01111111)b = 8 on the HEX LEDs	
 			.word 0x00000067 //(01100111)b = 9 on the HEX LEDs	
-
 			.word 0x00000077 //(01110111)b = A on the HEX LEDs
 			.word 0x0000007C //(01111100)b = b on the HEX LEDs
 			.word 0x00000039 //(00111001)b = C on the HEX LEDs
