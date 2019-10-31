@@ -60,7 +60,7 @@ Clear_DONE:	POP {R1-R8, LR}
 			BX LR
 
 HEX_flood_ASM:
-			BL display			
+			//BL display			
 
 			PUSH {R1-R8,LR}		
 			LDR R1, =HEX_0_3	
@@ -92,20 +92,17 @@ Flood_DONE:	POP {R1-R8, LR}
 			BX LR
 
 
-HEX_write_ASM:	
-				BL display	
-		
-				MOV R10, R0			//we know that R0 holds a hot-one encoding of which HEX display, R1 holds the character value
-				MOV R9, R1 
+HEX_write_ASM:	MOV R10, R0
+				MOV R9, R1
+				PUSH {R1-R8,LR}
 				BL HEX_clear_ASM		//we have to clear the display we have before doing anything on it
+				POP {R1-R8,LR}
 				MOV R0, R10
-		
+	
 				PUSH {R1-R8,LR}
 				LDR R1, =HEX_0_3		//put location of the HEX3-0 register into R0
 				MOV R3, #0				//this is our counter for which hex counts
-				MOV R4, #10				// Offset used to get proper hex value
 				LDR R5, =LIGHTS
-
 				ADD R5, R5, R9, LSL #2
 				B Write_Loop
 
@@ -145,8 +142,6 @@ FLOOD_N:	.word 0x000000FF
 			.word 0xFF000000
 
 
-ZEROS:		.word 0x00000000
-ONES:		.word 0x000000FF
 LIGHTS:		.word 0x0000003F //(00111111)b = 0 on the HEX LEDs
 			.word 0x00000006 //(00000110)b = 1 on the HEX LEDs
 			.word 0x0000005B //(01011011)b = 2 on the HEX LEDs
