@@ -84,6 +84,7 @@ CLEAR_LOOP:	CMP R1, #4
 			ANDS R2, R0, #0x00000001
 			LDRNE R3, [R3, R1, LSL #2]
 			LDRNE R4, [R3, #12]
+			LDRNE R4, [R3, #16]
 			LSR R0, R0, #1
 			ADD R1, R1, #1
 			B CLEAR_LOOP
