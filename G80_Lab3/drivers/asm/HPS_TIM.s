@@ -14,17 +14,17 @@ HPS_TIM_config_ASM:
 
 
 CONFIG_LOOP:	CMP R2, #4
-				B CONFIG_DONE
-				ANDS R4, R1, #0x1
-				BNE CONFIG
-				LSL R1, R1, #1
+				BEQ CONFIG_DONE
+				ANDS R4, R1, #1
+				BLNE CONFIG
+				LSR R1, R1, #1
 				ADD R2, R2, #1
 				B CONFIG_LOOP
 
 CONFIG:
-	PUSH {R1-R8}				// load word address of the chosen timer is at R3
+					// load word address of the chosen timer is at R3
 	LDR R3, =HPS_TIM
-	ADD R3, R2, LSL #2
+	LDR R3, [R3, R2, LSL #2]
 	MOV R4, R3
 	ADD R4, R4, #8 				// the control word address is 8 bytes after the load word
 	
@@ -53,8 +53,6 @@ CONFIG:
 	LDR R6, [R0, #16] // load enable to control bit, (1=start 0=stop)
 	ADD R5, R5, R6
 	STR R5, [R4] // actually put the updated control word in place
-
-	POP {R1-R8}
 	BX LR
 
 CONFIG_DONE:	POP {R1-R8,LR}
@@ -66,10 +64,11 @@ HPS_TIM_read_INT_ASM:	PUSH {R1-R8,LR}
 
 READ_LOOP:	CMP R1, #4
 			BEQ READ_DONE
-			ANDS R2, R0, #0x1
-			LDREQ R3, [R3, R1, LSL #2]
-			LDREQ R0, [R3, #16]
-			BEQ READ_DONE
+			ANDS R2, R0, #0x00000001
+			LDRNE R3, [R3, R1, LSL #2]
+			LDRNE R0, [R3, #16]
+			BNE READ_DONE
+			LSR R0, R0, #1
 			ADD R1, R1, #1
 			B READ_LOOP
 
@@ -82,10 +81,10 @@ HPS_TIM_clear_INT_ASM:	PUSH {R1-R8,LR}
 
 CLEAR_LOOP:	CMP R1, #4
 			BEQ CLEAR_DONE
-			ANDS R2, R0, #0x1
-			LDREQ R3, [R3, R1, LSL #2]
-			LDREQ R4, [R3, #12]
-			BEQ CLEAR_DONE
+			ANDS R2, R0, #0x00000001
+			LDRNE R3, [R3, R1, LSL #2]
+			LDRNE R4, [R3, #12]
+			LSR R0, R0, #1
 			ADD R1, R1, #1
 			B CLEAR_LOOP
 
