@@ -16,6 +16,15 @@
 	.global FPGA_JP2_ISR
 	.global FPGA_PS2_DUAL_ISR
 
+	.global hps_tim0_int_flag
+	.global pb_int_flag
+
+hps_tim0_int_flag:
+	.word 0x0
+
+pb_int_flag:
+	.word 0x0000
+
 A9_PRIV_TIM_ISR:
 	BX LR
 	
@@ -23,6 +32,16 @@ HPS_GPIO1_ISR:
 	BX LR
 	
 HPS_TIM0_ISR:
+	PUSH {LR}		
+	
+	MOV R0, #0x1				// Determine which timer it is
+	BL HPS_TIM_clear_INT_ASM	
+
+	LDR R0, =hps_tim0_int_flag
+	MOV R1, #1
+	STR R1, [R0]				//Set flag to 1
+
+	POP {LR}
 	BX LR
 	
 HPS_TIM1_ISR:
@@ -38,6 +57,15 @@ FPGA_INTERVAL_TIM_ISR:
 	BX LR
 	
 FPGA_PB_KEYS_ISR:
+	PUSH {LR}
+	BL read_PB_edgecap_ASM		//Get pushbutton that was pressed
+
+	LDR R1, =pb_int_flag
+	STR R0, [R1]				//Set flag to value of pb
+
+	BL PB_clear_edgecap_ASM		//Clear edgecap to reset interrupt
+
+	POP {LR}
 	BX LR
 	
 FPGA_Audio_ISR:

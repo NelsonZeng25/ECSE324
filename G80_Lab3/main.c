@@ -5,7 +5,9 @@
 #include "./drivers/inc/pushbuttons.h"
 #include "./drivers/inc/HEX_displays.h"
 #include "./drivers/inc/HPS_TIM.h"
-
+#include "./drivers/inc/ISRs.h"
+#include "./drivers/inc/address_map_arm.h"
+#include "./drivers/inc/int_setup.h"
 int main() {
 	
 	/*
@@ -68,7 +70,7 @@ int main() {
 		}
 	}
 
-*/
+
 
 	
 	HPS_TIM_config_t hps_tim;
@@ -144,6 +146,68 @@ int main() {
 				HEX_write_ASM(HEX4, 0);
 				HEX_write_ASM(HEX5, 0);
 			}
+		}
+	}
+*/
+	int_setup(2, (int[]) {73, 199});
+	enable_PB_INT_ASM(PB3 | PB2 | PB1);
+
+	HPS_TIM_config_t hps_tim;
+	hps_tim.tim = TIM0;
+	hps_tim.timeout = 10000;
+	hps_tim.LD_en = 1;
+	hps_tim.INT_en = 1;
+	hps_tim.enable = 1;
+	HPS_TIM_config_ASM(&hps_tim);
+
+	int micro = 0, second = 0, minute = 0, timerstart = 0;
+
+	while (1) {
+		//each 10 ms, we increment, we only go when the subroutine flag is active
+		if (hps_tim0_int_flag && timerstart) {
+			hps_tim0_int_flag = 0;
+			micro += 10; 
+
+			//increment ms until we reach 1000, then +1 second then reset
+			if (micro >= 1000) {
+				micro = 0;
+				second++;
+				//increment seconds, until we reach 60, then +1 minute then reset
+				if (second >= 60) {
+					second = 0;
+					minute++;
+					//reset minutes since we have no hours
+					if (minute >= 60) {
+						minute = 0;
+					}
+				}
+			}
+
+			//write on the proper hex display
+			HEX_write_ASM(HEX0, (micro % 100) / 10);
+			HEX_write_ASM(HEX1, micro / 100);
+			HEX_write_ASM(HEX2, second % 10);
+			HEX_write_ASM(HEX3, second / 10);
+			HEX_write_ASM(HEX4, minute % 10);
+			HEX_write_ASM(HEX5, minute / 10);
+		}
+		//if pushbutton flag active, the ISR is active, we do something according to which button pressed
+		if (pb_int_flag != 0){
+			if(pb_int_flag == 8) timerstart = 1;
+			else if(pb_int_flag == 4) timerstart = 0;
+			else if(pb_int_flag == 2) {
+				micro = 0;
+				second = 0;
+				minute = 0;
+				timerstart = 0;
+				HEX_write_ASM(HEX0, 0);
+				HEX_write_ASM(HEX1, 0);
+				HEX_write_ASM(HEX2, 0);
+				HEX_write_ASM(HEX3, 0);
+				HEX_write_ASM(HEX4, 0);
+				HEX_write_ASM(HEX5, 0);
+			}
+			pb_int_flag = 0;
 		}
 	}
 	return 0;

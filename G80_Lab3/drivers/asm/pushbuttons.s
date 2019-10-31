@@ -27,17 +27,16 @@ PB_data_is_pressed_ASM:				//R0 contains which button to check, hot-one encoding
 read_PB_edgecap_ASM:				//no input, only access edgecapture register
 		LDR R1, =PB_EDGE	
 		LDR R0, [R1]				//load the contents of the pushbutton register into R1
-		AND R0, R0, #0xF			//Get only edge cap bits
+		//AND R0, R0, #0xF			//Get only edge cap bits
 		BX LR						//USE R0 to pass arguments back		
 		
 PB_edgecap_is_pressed_ASM:			//R0 contains which button to check, hot-one encoding
-	LDR R1, =PB_EDGE
-	LDR R2, [R1]
-
-	CMP R0, R2
-	MOVEQ R0, #1
-	MOVNE R0, #0
-	BX LR
+		LDR R1, =PB_EDGE
+		LDR R2, [R1]	
+		CMP R0, R2
+		MOVEQ R0, #1
+		MOVNE R0, #0
+		BX LR
 
 PB_clear_edgecap_ASM:				//R0 contains which pushbutton
 		LDR R1, =PB_EDGE
