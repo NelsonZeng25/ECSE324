@@ -43,8 +43,8 @@ CONFIG:
 			ADD R5, R5, R6				// Add that bit to R5 so it's now on the "M" of the "IME" control word
 
 			LDR R6, [R0, #12] 			// R6 holds the INT parameter
-			EOR R6, R6, #1				// Exclusive OR since INT must be a 0 for the S-bit in the interrupt status register to be asserted
-										// INT must be a 0 for the "I" to be 1
+			EOR R6, R6, #1				// Exclusive OR since I bit must be a 0 for the S-bit in the interrupt status register to be asserted
+										// INT must be a 1 for the "I" to be 0
 			LSL R6, R6, #2				// Shift R6 by 2 bits so the result is now on the "I" of the "IME" control word
 			ADD R5, R5, R6 
 
