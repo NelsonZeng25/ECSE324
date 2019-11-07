@@ -1,0 +1,216 @@
+
+P:/ECSE324/G80_Lab1/part2.2.axf:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+00000000 <__cs3_interrupt_vector>:
+			.text
+			.global _start
+
+_start:		LDR R0, =NUMBERS
+   0:	e59f0150 	ldr	r0, [pc, #336]	; 158 <MAX_NUM+0x4>
+			LDR R1, =RESULT
+   4:	e59f1150 	ldr	r1, [pc, #336]	; 15c <MAX_NUM+0x8>
+			LDR R2, =N			// N variable
+   8:	e59f2150 	ldr	r2, [pc, #336]	; 160 <MAX_NUM+0xc>
+			LDR R8, [R2]		// Immediate N value
+   c:	e5928000 	ldr	r8, [r2]
+			LDR R7, =M			// M variable
+  10:	e59f714c 	ldr	r7, [pc, #332]	; 164 <MAX_NUM+0x10>
+			LDR R12, [R7]		// Immediate M value
+  14:	e597c000 	ldr	r12, [r7]
+			MOV R6, #0			// Sum variable
+  18:	e3a06000 	mov	r6, #0
+			MOV R3, #0			// Counter for NUMBERS
+  1c:	e3a03000 	mov	r3, #0
+			MOV R4, #4			// Array size of NUMBERS
+  20:	e3a04004 	mov	r4, #4
+			MOV R9, #0			// variable to hold sums of N
+  24:	e3a09000 	mov	r9, #0
+			MOV R10, #0			// Counter for number of multiplications done
+  28:	e3a0a000 	mov	r10, #0
+			CMP R8, R12			// Checks if m > n
+  2c:	e158000c 	cmp	r8, r12
+			BGT SET_RESULT
+  30:	ca000000 	bgt	38 <SET_RESULT>
+			ADD R11, R8, #1		// Number of results (or multiplications)	if n=2,3
+  34:	e288b001 	add	r11, r8, #1
+
+00000038 <SET_RESULT>:
+
+SET_RESULT:	ADD R11, R12, #1	// Number of results	if n=1 and m=3
+  38:	e28cb001 	add	r11, r12, #1
+			B SUM
+  3c:	eaffffff 	b	40 <SUM>
+
+00000040 <SUM>:
+
+SUM:		CMP R3, R4			// This adds all the numbers of the array together to get S
+  40:	e1530004 	cmp	r3, r4
+			BEQ RESET			// Stops when counter R3 is at array size R4
+  44:	0a000004 	beq	5c <RESET>
+			ADD R3, R3, #1		// Increment counter
+  48:	e2833001 	add	r3, r3, #1
+			LDR R5, [R0]		// R5 holds the number at index R0
+  4c:	e5905000 	ldr	r5, [r0]
+			ADD R6, R6, R5		// Add number to R6
+  50:	e0866005 	add	r6, r6, r5
+			ADD R0, #4			// Increment index
+  54:	e2800004 	add	r0, r0, #4
+			B SUM
+  58:	eafffff8 	b	40 <SUM>
+
+0000005c <RESET>:
+
+RESET:		LDR R0, =NUMBERS	// This resets the loop increments (R0 index and R3 counter)
+  5c:	e59f00f4 	ldr	r0, [pc, #244]	; 158 <MAX_NUM+0x4>
+			MOV R3, #1			// R3 counter starts at 1
+  60:	e3a03001 	mov	r3, #1
+			LDR R5, [R0]		// R5 holds the first numbers
+  64:	e5905000 	ldr	r5, [r0]
+			CMP R8, R12			// Checks if n = m (i.e. n=2, m=2)
+  68:	e158000c 	cmp	r8, r12
+			BEQ SUM_N			// For the case that n = 2, m = 2
+  6c:	0a000000 	beq	74 <SUM_N>
+			B SUM_N2			// For the case that n = 3, m = 1 or n = 1, m = 3
+  70:	ea00000e 	b	b0 <SUM_N2>
+
+00000074 <SUM_N>:
+
+SUM_N:		CMP R3, R8			// Check if counter is done iterating
+  74:	e1530008 	cmp	r3, r8
+			BEQ MULTI
+  78:	0a000003 	beq	8c <MULTI>
+			ADD R3, R3, #1		// Increment counter R3
+  7c:	e2833001 	add	r3, r3, #1
+			LDR R7, [R0, #4]!	// Load R7 with the next number
+  80:	e5b07004 	ldr	r7, [r0, #4]!
+			ADD R9, R7, R5		// Sum N is stored in R9
+  84:	e0879005 	add	r9, r7, r5
+			B SUM_N
+  88:	eafffff9 	b	74 <SUM_N>
+
+0000008c <MULTI>:
+MULTI:		SUB R7, R6, R9		// R7 holds Sum M = S - Sum N
+  8c:	e0467009 	sub	r7, r6, r9
+			MUL R7, R7, R9		// Multiply Sum M and Sum N and store it in R7
+  90:	e0070997 	mul	r7, r7, r9
+			STR R7, [R1]		// Store R7 in result
+  94:	e5817000 	str	r7, [r1]
+			ADD R1, R1, #4		// Increment result index
+  98:	e2811004 	add	r1, r1, #4
+			ADD R10, R10, #1	// Increment result counter
+  9c:	e28aa001 	add	r10, r10, #1
+			CMP R10, R11		// Checks if result counter R10 is done (R11 represents the number of results)
+  a0:	e15a000b 	cmp	r10, r11
+			BEQ SET_UP
+  a4:	0a000009 	beq	d0 <SET_UP>
+			MOV R3, #1			// Reset counter for sums back to 1
+  a8:	e3a03001 	mov	r3, #1
+			B SUM_N
+  ac:	eafffff0 	b	74 <SUM_N>
+
+000000b0 <SUM_N2>:
+
+SUM_N2:		CMP R10, R11				// Checks if result counter is done (R11 represents the number of results)
+  b0:	e15a000b 	cmp	r10, r11
+			BEQ SET_UP
+  b4:	0a000005 	beq	d0 <SET_UP>
+			ADD R10, #1					// Increment result counter
+  b8:	e28aa001 	add	r10, r10, #1
+			SUB R7, R6, R5				// R7 holds Sum M = S - Sum N
+  bc:	e0467005 	sub	r7, r6, r5
+			MUL R7, R7, R5				// Multiply Sum M and Sum N and store it in R7
+  c0:	e0070597 	mul	r7, r7, r5
+			STR R7, [R1], #4			// Store R7 to result and increment the index
+  c4:	e4817004 	str	r7, [r1], #4
+			LDR R5, [R0, #4]!			// R5 (Sum N) now points to the next number
+  c8:	e5b05004 	ldr	r5, [r0, #4]!
+			B SUM_N2
+  cc:	eafffff7 	b	b0 <SUM_N2>
+
+000000d0 <SET_UP>:
+
+SET_UP:		LDR R1, =RESULT				// R1 points to first number of results
+  d0:	e59f1084 	ldr	r1, [pc, #132]	; 15c <MAX_NUM+0x8>
+			LDR R2, =MIN_NUM
+  d4:	e59f208c 	ldr	r2, [pc, #140]	; 168 <MAX_NUM+0x14>
+			LDR R3, =MAX_NUM
+  d8:	e59f308c 	ldr	r3, [pc, #140]	; 16c <MAX_NUM+0x18>
+			LDR R5, [R1]				// R5 will hold Max value
+  dc:	e5915000 	ldr	r5, [r1]
+			LDR R6, [R1]				// R6 will hold Min value
+  e0:	e5916000 	ldr	r6, [r1]
+			STR R5, [R3]				// initialize min result variable with 1st number
+  e4:	e5835000 	str	r5, [r3]
+			STR R6, [R2]				// Do the same with the max result variable
+  e8:	e5826000 	str	r6, [r2]
+			B FINAL						// Both initialized at first number
+  ec:	eaffffff 	b	f0 <FINAL>
+
+000000f0 <FINAL>:
+
+FINAL:		SUBS R11, R11, #1			// Decrement result's array size
+  f0:	e25bb001 	subs	r11, r11, #1
+			BEQ END						// End when done iterating
+  f4:	0a00000a 	beq	124 <END>
+			ADD R1, R1, #4				// Increment R1 to next number
+  f8:	e2811004 	add	r1, r1, #4
+			LDR R7, [R1]				// R7 holds the next number in the list
+  fc:	e5917000 	ldr	r7, [r1]
+			CMP R7, R5					// Compare R7 with R5
+ 100:	e1570005 	cmp	r7, r5
+			BGE	MAX						// If R7 is bigger than R5, go to MAX
+ 104:	aa000004 	bge	11c <MAX>
+			CMP	R7,	R6					// Compare R7 with R6
+ 108:	e1570006 	cmp	r7, r6
+			BLE MIN						// If R6 is smaller than R1, go to MIN
+ 10c:	da000000 	ble	114 <MIN>
+			B FINAL
+ 110:	eafffff6 	b	f0 <FINAL>
+
+00000114 <MIN>:
+
+MIN:		STR R7, [R2]				// Update R6 with new minimum
+ 114:	e5827000 	str	r7, [r2]
+			B FINAL
+ 118:	eafffff4 	b	f0 <FINAL>
+
+0000011c <MAX>:
+MAX:		STR R7, [R3]					// Update R5 with new maximum
+ 11c:	e5837000 	str	r7, [r3]
+			B FINAL
+ 120:	eafffff2 	b	f0 <FINAL>
+
+00000124 <END>:
+
+END:    	B END               // infinite loop!
+ 124:	eafffffe 	b	124 <END>
+
+00000128 <RESULT>:
+	...
+
+00000138 <N>:
+ 138:	00000002 	.word	0x00000002
+
+0000013c <M>:
+ 13c:	00000002 	.word	0x00000002
+
+00000140 <NUMBERS>:
+ 140:	00000001 	.word	0x00000001
+ 144:	00000002 	.word	0x00000002
+ 148:	00000003 	.word	0x00000003
+ 14c:	00000004 	.word	0x00000004
+
+00000150 <MIN_NUM>:
+ 150:	00000000 	.word	0x00000000
+
+00000154 <MAX_NUM>:
+ 154:	00000000 	.word	0x00000000
+ 158:	00000140 	.word	0x00000140
+ 15c:	00000128 	.word	0x00000128
+ 160:	00000138 	.word	0x00000138
+ 164:	0000013c 	.word	0x0000013c
+ 168:	00000150 	.word	0x00000150
+ 16c:	00000154 	.word	0x00000154
