@@ -9,18 +9,21 @@
 	.global VGA_write_byte_ASM
 	.global VGA_draw_point_ASM
 
+/*
+ *	This method iterates through the character buffer column by column
+ */
 VGA_clear_charbuff_ASM:
-	PUSH {R4-R12} 				//save the state of the system
-	MOV R2, #0
-	LDR R3, =VGA_charbuff
-	MOV R0, #0
+	PUSH {R4-R12} 	
+	MOV R2, #0				// 0 constant stored in R2
+	LDR R3, =VGA_charbuff	// Address of character buffer
+	MOV R0, #0				// x counter
 
 X_CHAR_LOOP: 
-	MOV R1, #0
-	ADD R4, R3, R0			// Iterate x-axis
+	MOV R1, #0				// Reset y counter
+	ADD R4, R3, R0			// Iterate to next column
 
 Y_CHAR_LOOP: 
-	ADD R5, R4, R1, LSL #7	// Iterate y-axis
+	ADD R5, R4, R1, LSL #7	// Iterate to next row
 	
 	STRB R2, [R5]			// Clear specific byte
 	
@@ -36,25 +39,28 @@ Y_CHAR_LOOP:
 	BX LR
 
 
+/*
+ *	This method also iterates column by column but in the pixel buffer
+ */
 VGA_clear_pixelbuff_ASM:
 	PUSH {R4-R5}	
-	MOV R2, #0
-	LDR R3, =VGA_pixelbuff
-	MOV R0, #0						// X counter
+	MOV R2, #0						// 0 constant stored in R2
+	LDR R3, =VGA_pixelbuff			// Base address of pixel buffer
+	MOV R0, #0						// x counter
 
 X_PIXEL_LOOP:
-	MOV R1, #0						// Y counter
-	ADD R4, R3, R0, LSL #1			// Iterate x-axis
+	MOV R1, #0						// Reset y counter
+	ADD R4, R3, R0, LSL #1			// Iterate to next column
 Y_PIXEL_LOOP:
-	ADD R5, R4, R1, LSL #10			// Iterate y-axis
+	ADD R5, R4, R1, LSL #10			// Iterate to next row
 	
 	STRH R2, [R5]					// Clear specific pixel
 	
-	ADD R1, R1, #1					// Increment y
+	ADD R1, R1, #1					// Increment y counter
 	CMP R1, #240					// Check if we're at the bottom of the screen
 	BLT Y_PIXEL_LOOP				// If not, continue incrementing y
 	
-	ADD R0, R0, #1					// If yes, increment x
+	ADD R0, R0, #1					// If yes, increment x counter
 	CMP R0, #320					// Check if we're done clearing
 	BLT X_PIXEL_LOOP
 
@@ -91,7 +97,7 @@ VGA_write_byte_ASM:
 	BXGT LR
 	
 	LDR R3, =VGA_charbuff			// Set base address
-	ADD R3, R3, R0					// Set X-address and add it to base address					
+	ADD R3, R3, R0					// Set X-address			
 	ADD R3, R3, R1, LSL #7			// Add Y-address
 									// R3 now holds the address of where we want to write
 	LSR R4, R2, #4					// Get most significant hex					
@@ -101,7 +107,7 @@ VGA_write_byte_ASM:
 	ADDGT R4, R4, #7				// Add 7 so that the ASCII value is right
 	CMP R5, #9						
 	ADDGT R5, R5, #7
-	ADD R4, R4, #48					// Add base address of 0 (ASCII value)
+	ADD R4, R4, #48					// Add base address of 0 (ASCII value 48)
 	ADD R5, R5, #48
 	
 	STRB R4, [R3]					// Store most significant hex at input location
@@ -115,7 +121,7 @@ VGA_draw_point_ASM:
 	BXLT LR
 	CMP R1, #0
 	BXLT LR
-	LDR R3, =319				// Must use LDR since 319 is too high
+	LDR R3, =319				// Must use LDR since 319 is too high (overflow)
 	CMP R0, R3					// Check for out of bounds input
 	BXGT LR
 	CMP R1, #239

@@ -36,10 +36,8 @@ void test_pixel() {
 	}
 }
 
-//VGA_clear_charbuff_ASM();
-//VGA_clear_pixelbuff_ASM();
 int main() {
-	/*
+	
 	// PART 1 PUSHBUTTONS
 	while(1) {
 		int pushbutton = 0xF & read_PB_data_ASM();		// Get pushbutton value
@@ -63,13 +61,13 @@ int main() {
 				break;
 		}
 	}
-	*/
+	
 
 	// PART 2 KEYBOARD
 	int x = 0;
 	int y = 0;
-	int ps2;
-	char *data;
+	int ps2 = 0;
+	char *data = NULL;
 	
 	VGA_clear_charbuff_ASM();						// Initially clear screen
 	VGA_clear_pixelbuff_ASM();
