@@ -10,7 +10,13 @@
     <program>
         <type>C Program</type>
         <source_files>
-            <source_file filepath="true">getting_started.c</source_file>
+            <source_file filepath="true">main.c</source_file>
+            <source_file filepath="true">drivers/asm/VGA.s</source_file>
+            <source_file filepath="true">drivers/inc/VGA.h</source_file>
+            <source_file filepath="true">pushbuttons.s.o</source_file>
+            <source_file filepath="true">slider_switches.s.o</source_file>
+            <source_file filepath="true">drivers/asm/ps2_keyboard.s</source_file>
+            <source_file filepath="true">drivers/inc/ps2_keyboard.h</source_file>
         </source_files>
         <options>
             <compiler_flags>-g -O1</compiler_flags>
