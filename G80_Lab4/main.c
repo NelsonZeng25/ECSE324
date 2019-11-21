@@ -37,7 +37,7 @@ void test_pixel() {
 }
 
 int main() {
-	
+	/*
 	// PART 1 PUSHBUTTONS
 	while(1) {
 		int pushbutton = 0xF & read_PB_data_ASM();		// Get pushbutton value
@@ -61,8 +61,8 @@ int main() {
 				break;
 		}
 	}
+	*/
 	
-
 	// PART 2 KEYBOARD
 	int x = 0;
 	int y = 0;
@@ -86,5 +86,6 @@ int main() {
 			y = 0;									// reset y
 		}
 	}
+	
 	return 0;
 }
