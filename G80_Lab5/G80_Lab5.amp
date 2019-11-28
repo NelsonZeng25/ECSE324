@@ -16,7 +16,6 @@
             <source_file filepath="true">drivers/asm/ISRs.s</source_file>
             <source_file filepath="true">drivers/asm/LEDs.s.o</source_file>
             <source_file filepath="true">drivers/asm/address_map_arm.s</source_file>
-            <source_file filepath="true">drivers/asm/audio.s.o</source_file>
             <source_file filepath="true">drivers/asm/keyboard.s.o</source_file>
             <source_file filepath="true">drivers/asm/ps2_keyboard.s.o</source_file>
             <source_file filepath="true">drivers/asm/pushbuttons.s.o</source_file>
@@ -37,6 +36,8 @@
             <source_file filepath="true">drivers/inc/vga.h</source_file>
             <source_file filepath="true">drivers/inc/wavetable.h</source_file>
             <source_file filepath="true">drivers/src/int_setup.c</source_file>
+            <source_file filepath="true">drivers/asm/audio.s</source_file>
+            <source_file filepath="true">drivers/asm/audio.s.o</source_file>
         </source_files>
         <options>
             <compiler_flags>-g -O0</compiler_flags>
