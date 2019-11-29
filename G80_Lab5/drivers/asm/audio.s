@@ -10,12 +10,12 @@ audio_write_ASM:
 			LDR R2, =right_fifo // Loads the address of the data register for the right fifo
 			LDR R3, =fifospace 	// Loads the address of the data register for the fifospace
 
-			LDR R4, [R3, #16] 	// Loads the value of WSRC onto R4
+			LDRB R4, [R3, #2] 	// Loads the value of WSRC onto R4
 			CMP R4, #0
 			MOVEQ R0, #0 		// If it's 0, the subroutine returns 0 because the FIFO is full
 			POPEQ {R1-R5}
 			BXEQ LR
-			LDR R5, [R3, #24] 	// Loads the value of WSLC onto R5
+			LDRB R5, [R3, #3] 	// Loads the value of WSLC onto R5
 			CMP R5, #0
 			MOVEQ R0, #0		// If it's 0, the subroutine returns 0 because the FIFO is full
 			POPEQ {R1-R5}
