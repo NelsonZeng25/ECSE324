@@ -16,6 +16,10 @@
 	.global FPGA_JP2_ISR
 	.global FPGA_PS2_DUAL_ISR
 	
+	.global hps_tim0_int_flag
+
+hps_tim0_int_flag: .word 0x0
+
 A9_PRIV_TIM_ISR:
 	BX LR
 	
@@ -23,6 +27,17 @@ HPS_GPIO1_ISR:
 	BX LR
 	
 HPS_TIM0_ISR:
+	PUSH {LR}		
+	
+	MOV R0, #0x1				// R0 is the input for the clear method
+								// In this case, we're using the TIM0 timer so R0 should be 0001
+	BL HPS_TIM_clear_INT_ASM	
+
+	LDR R0, =hps_tim0_int_flag
+	MOV R1, #1
+	STR R1, [R0]				// Set flag to 1
+
+	POP {LR}
 	BX LR
 	
 HPS_TIM1_ISR:

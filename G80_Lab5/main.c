@@ -11,16 +11,16 @@
 #include "./drivers/inc/slider_switches.h"
 
 // Make Waves Part 1
-float make_wave(double f, int t) {
-	double index = (f*t) - 48000 * (((int) ((f * t) / 48000)));
-	int x = (index == (int) index)? index : (int) (index) + 1; 		// x holds upper int of index
+float make_wave(float f, int t) {
+	float index = (f*t) - 48000 * (((int) ((f * t) / 48000)));
+	int x = (index == (int) index)? (int) index : ((int) (index)) + 1; 		// x holds upper int of index
 	int y = (int) index;											// y holds lower int of index
 	float signal;
 	if (x!=y) {						// Check if index isn't a whole number
-		int remainder = index - y;	// Get remainder
+		float remainder = index - y;	// Get remainder
 		signal = (1-remainder)*sine[y] + remainder * sine[x];	// Linear interpolation of wavetable
 	} else {
-		signal = sine[x];			// If index is a whole number, simply get the index of the wavetable
+		signal = sine[y];			// If index is a whole number, simply get the index of the wavetable
 	}
 
 	return signal;
@@ -44,7 +44,9 @@ int main() {
 	*/
 
 	// Control Waves Part 2
-	int time = 0, amplitude = 1;
+	int time = 0;
+	float amplitude = 1.5;
+
 	HPS_TIM_config_t hps_tim;
 	hps_tim.tim = TIM0;
 	hps_tim.timeout = 20;
@@ -55,124 +57,130 @@ int main() {
 	HPS_TIM_config_ASM(&hps_tim);
 	int_setup(1, (int []){199});
 
-	float signal =0;
+	float signal = 0;
 	int i = 0;
-	int keys = 0;
+	int n [8] = {0,0,0,0,0,0,0,0};
+	char *data = 0;
+	int isPressed = 1;	// 1 = pressed, 0 = released
+	float sounds[8][48000];
 
-	float frequencyTable [] = {130.813, 146.832, 164.814, 174.615, 195.998, 220.000, 246.942, 261.626};
-	float f [8] = {0,0,0,0,0,0,0,0};
+	for(time=0; time < 48000; time++){
+		sounds[0][time] = make_wave(130.813, time); //generates low C
+		sounds[1][time] = make_wave(146.832, time); //generates D
+		sounds[2][time] = make_wave(164.814, time); //generates E
+		sounds[3][time] = make_wave(174.614, time); //generates F
+		sounds[4][time] = make_wave(195.998, time); //generates G
+		sounds[5][time] = make_wave(220.000, time); //generates A
+		sounds[6][time] = make_wave(246.942, time); //generates B
+		sounds[7][time] = make_wave(261.626, time); //generates high C
+	}
+	time = 0;
 
-	char *data;
-	int status = 1;	// 1 = pressed, 0 = released
 	while(1) {
-		i = 0;
-		if(read_ps2_data_ASM(data)) { //reads one key pressed
+		signal = 0;
+		if(hps_tim0_int_flag && read_ps2_data_ASM(data)) { //reads one key pressed
+			switch (*data) {
+				case 0x1C:
+					n[0] = (isPressed) ? 1 : 0;
+					isPressed = 1;
+					break;
+				case 0x1B:
+					n[1] = (isPressed) ? 1 : 0;
+					isPressed = 1;
+					break;
+				case 0x23:
+					n[2] = (isPressed) ? 1 : 0;
+					isPressed = 1;
+					break;
+				case 0x2B:
+					n[3] = (isPressed) ? 1 : 0;
+					isPressed = 1;
+					break;
+				case 0x3B:
+					n[4] = (isPressed) ? 1 : 0;
+					isPressed = 1;
+					break;
+				case 0x42:
+					n[5] = (isPressed) ? 1 : 0;
+					isPressed = 1;
+					break;
+				case 0x4B:
+					n[6] = (isPressed) ? 1 : 0;
+					isPressed = 1;
+					break;
+				case 0x4C:
+					n[7] = (isPressed) ? 1 : 0;
+					isPressed = 1;
+					break;
+				case 0xF0:
+					isPressed = 0;
+					break;
+				case 0x4E:
+					amplitude = (amplitude <= 0) ? 0 : amplitude - 0.5;
+					break;
+				case 0x55:
+					amplitude = (amplitude >= 5) ? 5 : amplitude + 0.5;
+					break;
+			}
+			/*
 			if( *data == 0x1C) {
-				if(status == 1){
-					f [0] = frequencyTable[0];
-				}
-				else{
-					//Key is released
-					f [0] = 0;
-					status = 1;
-				}
+				n[0] = (isPressed) ? 1 : 0;
+				isPressed = 1;
 			}
-			if( *data == 0x1B) {
-				if(status == 1){
-					f [1] = frequencyTable[1];
-				}
-				else{
-					//Key is released
-					f [1] = 0;
-					status = 1;
-				}
+			else if( *data == 0x1B) {
+				n[1] = (isPressed) ? 1 : 0;
+				isPressed = 1;
 			}
-			if( *data == 0x23) {
-				if(status == 1){
-					f [2] = frequencyTable[2];
-				}
-				else{
-					//Key is released
-					f [2] = 0;
-					status = 1;
-				}
+			else if( *data == 0x23) {
+				n[2] = (isPressed) ? 1 : 0;
+				isPressed = 1;
 			}
-			if( *data == 0x2B) {
-				if(status == 1){
-					f [3] = frequencyTable[3];
-				}
-				else{
-					//Key is released
-					f [3] = 0;
-					status = 1;
-				}
+			else if( *data == 0x2B) {
+				n[3] = (isPressed) ? 1 : 0;
+				isPressed = 1;
+			}	
+			else if( *data == 0x3B) {
+				n[4] = (isPressed) ? 1 : 0;
+				isPressed = 1;
 			}
-			
-			if( *data == 0x3B) {
-				if(status == 1){
-					f [4] = frequencyTable[4];
-				}
-				else{
-					//Key is released
-					f [4] = 0;
-					status = 1;
-				}
+			else if( *data == 0x42) {
+				n[5] = (isPressed) ? 1 : 0;
+				isPressed = 1;
 			}
-			if( *data == 0x42) {
-				if(status == 1){
-					f [5] = frequencyTable[5];
-				}
-				else{
-					//Key is released
-					f [5] = 0;
-					status = 1;
-				}
+			else if( *data == 0x4B) {
+				n[6] = (isPressed) ? 1 : 0;
+				isPressed = 1;
 			}
-			if( *data == 0x4B) {
-				if(status == 1){
-					f [6] = frequencyTable[6];
-				}
-				else{
-					//Key is released
-					f [6] = 0;
-					status = 1;
-				}
+			else if( *data == 0x4C) {
+				n[7] = (isPressed) ? 1 : 0;
+				isPressed = 1;
 			}
-			if( *data == 0x4C) {
-				if(status == 1){
-					f [7] = frequencyTable[7];
-				}
-				else{
-					//Key is released
-					f [7] = 0;
-					status = 1;
-				}
-			}
-			if( *data == 0xf0 ){
-				status = 0; //key is released
+			else if( *data == 0xF0 ){
+			 isPressed = 0; 		//key is released
 			}
 			//VOLUME DOWN
-			if( *data == 0x54) {
+			else if( *data == 0x4E) {
 				if (amplitude == 0) amplitude = 0;
-				else amplitude -= 10;
+				else amplitude -= 0.5;
 			}	
-			if( *data == 0x5B) {
+			else if( *data == 0x55) {
 				if (amplitude == 100) amplitude = 100;
-				else amplitude += 10; 
-			}	
+				else amplitude += 0.5; 
+			}
+			*/	
 		}
-		signal = 0;
-		for(i = 0; i < 8; i++) {
-			if(f [i] != 0) signal += make_wave(f [i], time);
-		}
-		signal = amplitude * signal;
 
-		if (hps_tim0_int_flag){
-			hps_tim0_int_flag = 0;
-			audio_write_data_ASM(signal, signal);
-			time += 1;
-			time = time % 48000;
+		for(i = 0; i < 8; i++) {
+			if(n[i] != 0) signal += sounds[i][time];
 		}
+		
+		signal *= amplitude;
+
+		if (hps_tim0_int_flag && audio_write_data_ASM(signal, signal)){
+			hps_tim0_int_flag = 0;
+			time++;
+		}
+		if(time >= 48000) time = 0;
 	}
 	
 	return 0;
