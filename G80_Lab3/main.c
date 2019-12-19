@@ -126,7 +126,7 @@ int main() {
 				}
 			}
 
-			HEX_write_ASM(HEX0, (milli % 100) / 10);	// Milli increments in 10 microseconds so we must modulo and divide by 10 to get the digit at 0.01 s
+			HEX_write_ASM(HEX0, (milli % 100) / 10);	// Milli increments in 10 milliseconds so we must modulo and divide by 10 to get the digit at 0.01 s
 			HEX_write_ASM(HEX1, milli / 100);			// Divide Milli by 100 to get 0.1s digit
 			HEX_write_ASM(HEX2, second % 10);			// Modulo seconds to get 1s digit
 			HEX_write_ASM(HEX3, second / 10);			// Divide by 10 to get 10s digit
